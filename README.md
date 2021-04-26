@@ -11,11 +11,12 @@ This repository presents different Machine Learning models, divided into each of
    - Kernel Adaptative Filtering (KAF)
    - Gaussian Process Regressor (GP)
    - Kernel Ridge (KR)
+   - Logistic Regression (LR)
 
 4. Clasificaction (Cla)
 
 5. Clustering (Clu)
-
+   - K Means (KM)
 
 
 
