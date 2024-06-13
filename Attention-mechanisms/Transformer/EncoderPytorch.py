@@ -1,19 +1,33 @@
+
+# ======================================================================================
+# Libraries 
+# ======================================================================================
 import torch
 import math
 from torch import nn
 import torch.nn.functional as F
 
-def scaled_dot_product(q, k, v, mask=None):
-    d_k = q.size()[-1]
-    scaled = torch.matmul(q, k.transpose(-1, -2)) / math.sqrt(d_k)
+def scaled_dot_product(Q, K, V, mask=None):
+    """
+        Inputs:
+            Q: Query matriz
+            K: Key matriz
+            V: Value matriz
+            mask: Mask 
+        Outputs:
+            values: 
+            H: Attention matrix
+    """
+    d_k = Q.size()[-1]
+    scaled = torch.matmul(Q, K.transpose(-1, -2)) / math.sqrt(d_k)
     print(f"scaled.size() : {scaled.size()}")
     if mask is not None:
         print(f"-- ADDING MASK of shape {mask.size()} --") 
-        # Broadcasting add. So just the last N dimensions need to match
         scaled += mask
-    attention = F.softmax(scaled, dim=-1)
-    values = torch.matmul(attention, v)
-    return values, attention
+    
+    H = F.softmax(scaled, dim=-1)       # Attention matrix
+    values = torch.matmul(H, V)         #     
+    return values, H
 
 class MultiHeadAttention(nn.Module):
 
@@ -92,6 +106,14 @@ class PositionwiseFeedForward(nn.Module):
 class EncoderLayer(nn.Module):
 
     def __init__(self, d_model, ffn_hidden, num_heads, drop_prob):
+        """
+            Inputs:
+                d_model: Dimension model
+                ffn_hidden
+                num_heads: Multihead-attention
+                drop_prob: Dropout
+        """
+
         super(EncoderLayer, self).__init__()
         self.attention = MultiHeadAttention(d_model=d_model, num_heads=num_heads)
         self.norm1 = LayerNormalization(parameters_shape=[d_model])
@@ -101,6 +123,11 @@ class EncoderLayer(nn.Module):
         self.dropout2 = nn.Dropout(p=drop_prob)
 
     def forward(self, x):
+        """
+            Inputs:
+                x: 
+        """
+
         residual_x = x
         print("------- ATTENTION 1 ------")
         x = self.attention(x, mask=None)
@@ -119,6 +146,15 @@ class EncoderLayer(nn.Module):
 
 class Encoder(nn.Module):
     def __init__(self, d_model, ffn_hidden, num_heads, drop_prob, num_layers):
+        """
+            Inputs: 
+                d_model: Dimendion model
+                ffn_hidden: 
+                num_heads: Multihead-attention
+                drop_prob: Dropout 
+                num_layers: Encoder number
+        """
+
         super().__init__()
         self.layers = nn.Sequential(*[EncoderLayer(d_model, ffn_hidden, num_heads, drop_prob)
                                      for _ in range(num_layers)])
